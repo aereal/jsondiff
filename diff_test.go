@@ -8,17 +8,30 @@ import (
 )
 
 func TestDiff(t *testing.T) {
-	q := parseQuery(t, ".b, .c")
-	lhs := map[string]interface{}{"a": 1, "b": 2, "c": 3, "d": 4}
-	rhs := map[string]interface{}{"a": 1, "b": 1, "c": 2, "d": 3}
-	got, err := Diff(lhs, rhs, Ignore(q))
-	if err != nil {
-		t.Fatal(err)
+	testCases := []struct {
+		name     string
+		opts     []Option
+		wantDiff string
+	}{
+		{
+			"ignore",
+			[]Option{Ignore(parseQuery(t, ".b, .c"))},
+			"--- lhs\n+++ rhs\n@@ -2,6 +2,6 @@\n   \"a\": 1,\n   \"b\": null,\n   \"c\": null,\n-  \"d\": 4\n+  \"d\": 3\n }\n \n",
+		},
 	}
-	var want string = "--- lhs\n+++ rhs\n@@ -2,6 +2,6 @@\n   \"a\": 1,\n   \"b\": null,\n   \"c\": null,\n-  \"d\": 4\n+  \"d\": 3\n }\n \n"
-	if got != want {
-		t.Log(got)
-		t.Errorf("got:\n%q\nwant:\n%q", got, want)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			lhs := map[string]interface{}{"a": 1, "b": 2, "c": 3, "d": 4}
+			rhs := map[string]interface{}{"a": 1, "b": 1, "c": 2, "d": 3}
+			got, err := Diff(lhs, rhs, tc.opts...)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != tc.wantDiff {
+				t.Log(got)
+				t.Errorf("got:\n%q\nwant:\n%q", got, tc.wantDiff)
+			}
+		})
 	}
 }
 
