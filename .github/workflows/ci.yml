@@ -1,0 +1,43 @@
+---
+
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: lint
+        uses: reviewdog/action-golangci-lint@v2
+  test:
+    strategy:
+      matrix:
+        go_version:
+          - 1.16.x
+          - 1.17.x
+          - 1.18.x
+        os:
+          - ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go_version }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ matrix.go_version }}-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-${{ matrix.go_version }}
+      - name: test
+        run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
+      - name: upload coverage
+        uses: codecov/codecov-action@v2
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == '1.18.x' }}
+        with:
+          files: ./cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt
