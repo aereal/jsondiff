@@ -14,6 +14,11 @@ func TestDiff(t *testing.T) {
 		wantDiff string
 	}{
 		{
+			"nothing",
+			[]Option{},
+			"--- lhs\n+++ rhs\n@@ -1,7 +1,7 @@\n {\n   \"a\": 1,\n-  \"b\": 2,\n-  \"c\": 3,\n-  \"d\": 4\n+  \"b\": 1,\n+  \"c\": 2,\n+  \"d\": 3\n }\n \n",
+		},
+		{
 			"ignore",
 			[]Option{Ignore(parseQuery(t, ".b, .c"))},
 			"--- lhs\n+++ rhs\n@@ -2,6 +2,6 @@\n   \"a\": 1,\n   \"b\": null,\n   \"c\": null,\n-  \"d\": 4\n+  \"d\": 3\n }\n \n",
