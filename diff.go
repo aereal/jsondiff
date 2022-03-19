@@ -91,22 +91,19 @@ func withUpdate(query *gojq.Query) *gojq.Query {
 	var ret *gojq.Query
 	qs := splitIntoTerms(query)
 	for j := len(qs) - 1; j >= 0; j-- {
+		left := &gojq.Query{
+			Op:    gojq.OpAssign,
+			Left:  qs[j],
+			Right: nullRhs,
+		}
 		if ret == nil { // most right leaf
-			ret = &gojq.Query{
-				Op:    gojq.OpAssign,
-				Left:  qs[j],
-				Right: nullRhs,
-			}
+			ret = left
 			continue
 		}
 
 		ret = &gojq.Query{
-			Op: gojq.OpPipe,
-			Left: &gojq.Query{
-				Op:    gojq.OpAssign,
-				Left:  qs[j],
-				Right: nullRhs,
-			},
+			Op:    gojq.OpPipe,
+			Left:  left,
 			Right: ret,
 		}
 	}
