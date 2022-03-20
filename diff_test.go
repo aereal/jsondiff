@@ -22,18 +22,6 @@ func TestDiff(t *testing.T) {
 			false,
 		},
 		{
-			"ignore",
-			[]Option{Ignore(parseQuery(t, ".b, .c"))},
-			"./testdata/ignore.diff",
-			false,
-		},
-		{
-			"only",
-			[]Option{Only(parseQuery(t, ".d"))},
-			"./testdata/only.diff",
-			false,
-		},
-		{
 			"both only and ignore",
 			[]Option{Ignore(parseQuery(t, ".b, .c")), Only(parseQuery(t, ".d"))},
 			"",
