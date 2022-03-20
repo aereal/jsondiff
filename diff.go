@@ -12,6 +12,8 @@ import (
 	"github.com/itchyny/gojq"
 )
 
+var ErrEitherOnlyOneOption = errors.New("either of only one of Ignore() or Only() must be specified")
+
 type opt struct {
 	ignore *gojq.Query
 	only   *gojq.Query
@@ -19,7 +21,7 @@ type opt struct {
 
 func (o *opt) validate() error {
 	if o.ignore != nil && o.only != nil {
-		return errors.New("either of only one of Ignore() or Only() must be specified")
+		return ErrEitherOnlyOneOption
 	}
 	return nil
 }
