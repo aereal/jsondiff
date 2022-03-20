@@ -3,6 +3,7 @@ package jsondiff
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/hexops/gotextdiff"
@@ -14,6 +15,13 @@ import (
 type opt struct {
 	ignore *gojq.Query
 	only   *gojq.Query
+}
+
+func (o *opt) validate() error {
+	if o.ignore != nil && o.only != nil {
+		return errors.New("either of only one of Ignore() or Only() must be specified")
+	}
+	return nil
 }
 
 // Option is a function to modify Diff's behavior.
@@ -38,6 +46,9 @@ func Diff(lhs, rhs interface{}, opts ...Option) (string, error) {
 	o := &opt{}
 	for _, f := range opts {
 		f(o)
+	}
+	if err := o.validate(); err != nil {
+		return "", err
 	}
 	var (
 		left  = lhs
