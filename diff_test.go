@@ -24,6 +24,11 @@ func TestDiff(t *testing.T) {
 			[]Option{Ignore(parseQuery(t, ".b, .c"))},
 			"./testdata/ignore.diff",
 		},
+		{
+			"only",
+			[]Option{Only(parseQuery(t, ".d"))},
+			"./testdata/only.diff",
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
