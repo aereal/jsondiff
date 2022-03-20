@@ -1,6 +1,7 @@
 package jsondiff
 
 import (
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -9,19 +10,19 @@ import (
 
 func TestDiff(t *testing.T) {
 	testCases := []struct {
-		name     string
-		opts     []Option
-		wantDiff string
+		name         string
+		opts         []Option
+		wantDiffPath string
 	}{
 		{
 			"nothing",
 			[]Option{},
-			"--- lhs\n+++ rhs\n@@ -1,7 +1,7 @@\n {\n   \"a\": 1,\n-  \"b\": 2,\n-  \"c\": 3,\n-  \"d\": 4\n+  \"b\": 1,\n+  \"c\": 2,\n+  \"d\": 3\n }\n \n",
+			"./testdata/nothing.diff",
 		},
 		{
 			"ignore",
 			[]Option{Ignore(parseQuery(t, ".b, .c"))},
-			"--- lhs\n+++ rhs\n@@ -2,6 +2,6 @@\n   \"a\": 1,\n   \"b\": null,\n   \"c\": null,\n-  \"d\": 4\n+  \"d\": 3\n }\n \n",
+			"./testdata/ignore.diff",
 		},
 	}
 	for _, tc := range testCases {
@@ -32,9 +33,12 @@ func TestDiff(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if got != tc.wantDiff {
-				t.Log(got)
-				t.Errorf("got:\n%q\nwant:\n%q", got, tc.wantDiff)
+			want, err := os.ReadFile(tc.wantDiffPath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(string(want), got); diff != "" {
+				t.Errorf("-want,+got:\n%s", diff)
 			}
 		})
 	}
