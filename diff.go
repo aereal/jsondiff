@@ -3,6 +3,7 @@ package jsondiff
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/hexops/gotextdiff"
@@ -11,8 +12,18 @@ import (
 	"github.com/itchyny/gojq"
 )
 
+var ErrEitherOnlyOneOption = errors.New("either of only one of Ignore() or Only() must be specified")
+
 type opt struct {
 	ignore *gojq.Query
+	only   *gojq.Query
+}
+
+func (o *opt) validate() error {
+	if o.ignore != nil && o.only != nil {
+		return ErrEitherOnlyOneOption
+	}
+	return nil
 }
 
 // Option is a function to modify Diff's behavior.
@@ -25,17 +36,28 @@ func Ignore(query *gojq.Query) Option {
 	}
 }
 
+// Only returns Option function that indicates the function to calculate differences based on the structure pointed by the query.
+func Only(query *gojq.Query) Option {
+	return func(o *opt) {
+		o.only = query
+	}
+}
+
 // Diff calculates differences with lhs and rhs.
 func Diff(lhs, rhs interface{}, opts ...Option) (string, error) {
 	o := &opt{}
 	for _, f := range opts {
 		f(o)
 	}
+	if err := o.validate(); err != nil {
+		return "", err
+	}
 	var (
 		left  = lhs
 		right = rhs
 	)
-	if o.ignore != nil {
+	switch {
+	case o.ignore != nil:
 		var err error
 		q := withUpdate(o.ignore)
 		left, err = modifyValue(q, lhs)
@@ -45,6 +67,16 @@ func Diff(lhs, rhs interface{}, opts ...Option) (string, error) {
 		right, err = modifyValue(q, rhs)
 		if err != nil {
 			return "", fmt.Errorf("modify(rhs): %v", err)
+		}
+	case o.only != nil:
+		var err error
+		left, err = modifyValue(o.only, lhs)
+		if err != nil {
+			return "", fmt.Errorf("modify(lhs): %v", err)
+		}
+		right, err = modifyValue(o.only, right)
+		if err != nil {
+			return "", fmt.Errorf("modify(lhs): %v", err)
 		}
 	}
 	l, err := toJSON(left)

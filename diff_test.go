@@ -13,16 +13,31 @@ func TestDiff(t *testing.T) {
 		name         string
 		opts         []Option
 		wantDiffPath string
+		wantErr      bool
 	}{
 		{
 			"nothing",
 			[]Option{},
 			"./testdata/nothing.diff",
+			false,
 		},
 		{
 			"ignore",
 			[]Option{Ignore(parseQuery(t, ".b, .c"))},
 			"./testdata/ignore.diff",
+			false,
+		},
+		{
+			"only",
+			[]Option{Only(parseQuery(t, ".d"))},
+			"./testdata/only.diff",
+			false,
+		},
+		{
+			"both only and ignore",
+			[]Option{Ignore(parseQuery(t, ".b, .c")), Only(parseQuery(t, ".d"))},
+			"",
+			true,
 		},
 	}
 	for _, tc := range testCases {
@@ -30,8 +45,11 @@ func TestDiff(t *testing.T) {
 			lhs := map[string]interface{}{"a": 1, "b": 2, "c": 3, "d": 4}
 			rhs := map[string]interface{}{"a": 1, "b": 1, "c": 2, "d": 3}
 			got, err := Diff(lhs, rhs, tc.opts...)
-			if err != nil {
-				t.Fatal(err)
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("wantErr=%v got=%v (%#v)", tc.wantErr, err, err)
+			}
+			if tc.wantErr {
+				return
 			}
 			want, err := os.ReadFile(tc.wantDiffPath)
 			if err != nil {
