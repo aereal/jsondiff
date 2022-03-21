@@ -27,6 +27,11 @@ jsondiff -only '.d' ./testdata/from.json ./testdata/to.json
 # +3
 ```
 
+## See also
+
+- [gojq][]
+  - Thanks to this library, it is able to filter JSON structures
+
 ## License
 
 See LICENSE file.
