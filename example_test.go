@@ -11,37 +11,37 @@ var (
 	rhs = map[string]interface{}{"a": 1, "b": 1, "c": 2, "d": 3}
 )
 
-func ExampleDiff_only() {
+func ExampleDiffFromObjects_only() {
 	query, err := gojq.Parse(".d")
 	if err != nil {
 		panic(err)
 	}
-	diff, err := Diff(lhs, rhs, Only(query))
+	diff, err := DiffFromObjects(lhs, rhs, Only(query))
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(diff)
 	// Output:
-	// --- lhs
-	// +++ rhs
+	// --- from
+	// +++ to
 	// @@ -1,2 +1,2 @@
 	// -4
 	// +3
 }
 
-func ExampleDiff_ignore() {
+func ExampleDiffFromObjects_ignore() {
 	query, err := gojq.Parse(".b, .c")
 	if err != nil {
 		panic(err)
 	}
-	diff, err := Diff(lhs, rhs, Ignore(query))
+	diff, err := DiffFromObjects(lhs, rhs, Ignore(query))
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(diff)
 	// Output:
-	// --- lhs
-	// +++ rhs
+	// --- from
+	// +++ to
 	// @@ -2,6 +2,6 @@
 	//    "a": 1,
 	//    "b": null,
