@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 
 	"github.com/hexops/gotextdiff"
 	"github.com/hexops/gotextdiff/myers"
@@ -43,8 +44,50 @@ func Only(query *gojq.Query) Option {
 	}
 }
 
-// Diff calculates differences with lhs and rhs.
-func Diff(lhs, rhs interface{}, opts ...Option) (string, error) {
+// DiffFromFiles calculates differences with flies' contents.
+func DiffFromFiles(from, to fs.File, opts ...Option) (string, error) {
+	l, err := newInputFromFile(from)
+	if err != nil {
+		return "", fmt.Errorf("left: %w", err)
+	}
+	r, err := newInputFromFile(to)
+	if err != nil {
+		return "", fmt.Errorf("right: %w", err)
+	}
+	return takeDiff(l, r, opts...)
+}
+
+// DiffFromObjects calculates differences with from and to.
+func DiffFromObjects(from, to interface{}, opts ...Option) (string, error) {
+	return takeDiff(&input{x: from, name: "from"}, &input{x: to, name: "to"}, opts...)
+}
+
+// Diff calculates differences with from and to.
+//
+// Deprecated: use DiffObjects()
+func Diff(from, to interface{}, opts ...Option) (string, error) {
+	return DiffFromObjects(from, to, opts...)
+}
+
+func newInputFromFile(f fs.File) (*input, error) {
+	var i input
+	st, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	i.name = st.Name()
+	if err := json.NewDecoder(f).Decode(&i.x); err != nil {
+		return nil, err
+	}
+	return &i, nil
+}
+
+type input struct {
+	name string
+	x    interface{}
+}
+
+func takeDiff(from, to *input, opts ...Option) (string, error) {
 	o := &opt{}
 	for _, f := range opts {
 		f(o)
@@ -53,42 +96,42 @@ func Diff(lhs, rhs interface{}, opts ...Option) (string, error) {
 		return "", err
 	}
 	var (
-		left  = lhs
-		right = rhs
+		fromObj = from.x
+		toObj   = to.x
 	)
 	switch {
 	case o.ignore != nil:
 		var err error
 		q := withUpdate(o.ignore)
-		left, err = modifyValue(q, lhs)
+		fromObj, err = modifyValue(q, fromObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
 		}
-		right, err = modifyValue(q, rhs)
+		toObj, err = modifyValue(q, toObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(rhs): %v", err)
 		}
 	case o.only != nil:
 		var err error
-		left, err = modifyValue(o.only, lhs)
+		fromObj, err = modifyValue(o.only, fromObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
 		}
-		right, err = modifyValue(o.only, right)
+		toObj, err = modifyValue(o.only, toObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
 		}
 	}
-	l, err := toJSON(left)
+	l, err := toJSON(fromObj)
 	if err != nil {
 		return "", fmt.Errorf("toJSON(lhs): %v", err)
 	}
-	r, err := toJSON(right)
+	r, err := toJSON(toObj)
 	if err != nil {
 		return "", fmt.Errorf("toJSON(rhs): %v", err)
 	}
 	edits := myers.ComputeEdits(span.URIFromPath(""), l, r)
-	d := gotextdiff.ToUnified("lhs", "rhs", l, edits)
+	d := gotextdiff.ToUnified(from.name, to.name, l, edits)
 	return fmt.Sprint(d), nil
 }
 

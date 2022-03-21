@@ -2,6 +2,7 @@ package jsondiff
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/itchyny/gojq"
 )
@@ -11,37 +12,63 @@ var (
 	rhs = map[string]interface{}{"a": 1, "b": 1, "c": 2, "d": 3}
 )
 
-func ExampleDiff_only() {
+func ExampleDiffFromFiles() {
 	query, err := gojq.Parse(".d")
 	if err != nil {
 		panic(err)
 	}
-	diff, err := Diff(lhs, rhs, Only(query))
+	from, err := os.Open("./testdata/from.json")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(diff)
+	to, err := os.Open("./testdata/to.json")
+	if err != nil {
+		panic(err)
+	}
+	diff, err := DiffFromFiles(from, to, Only(query))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Print(diff)
 	// Output:
-	// --- lhs
-	// +++ rhs
+	// --- from.json
+	// +++ to.json
 	// @@ -1,2 +1,2 @@
 	// -4
 	// +3
 }
 
-func ExampleDiff_ignore() {
-	query, err := gojq.Parse(".b, .c")
+func ExampleDiffFromObjects_only() {
+	query, err := gojq.Parse(".d")
 	if err != nil {
 		panic(err)
 	}
-	diff, err := Diff(lhs, rhs, Ignore(query))
+	diff, err := DiffFromObjects(lhs, rhs, Only(query))
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(diff)
 	// Output:
-	// --- lhs
-	// +++ rhs
+	// --- from
+	// +++ to
+	// @@ -1,2 +1,2 @@
+	// -4
+	// +3
+}
+
+func ExampleDiffFromObjects_ignore() {
+	query, err := gojq.Parse(".b, .c")
+	if err != nil {
+		panic(err)
+	}
+	diff, err := DiffFromObjects(lhs, rhs, Ignore(query))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(diff)
+	// Output:
+	// --- from
+	// +++ to
 	// @@ -2,6 +2,6 @@
 	//    "a": 1,
 	//    "b": null,

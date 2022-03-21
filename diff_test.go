@@ -32,7 +32,7 @@ func TestDiff(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			lhs := map[string]interface{}{"a": 1, "b": 2, "c": 3, "d": 4}
 			rhs := map[string]interface{}{"a": 1, "b": 1, "c": 2, "d": 3}
-			got, err := Diff(lhs, rhs, tc.opts...)
+			got, err := DiffFromObjects(lhs, rhs, tc.opts...)
 			if (err != nil) != tc.wantErr {
 				t.Fatalf("wantErr=%v got=%v (%#v)", tc.wantErr, err, err)
 			}
