@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 
 	"github.com/hexops/gotextdiff"
 	"github.com/hexops/gotextdiff/myers"
@@ -43,6 +44,19 @@ func Only(query *gojq.Query) Option {
 	}
 }
 
+// DiffFromFiles calculates differences with flies' contents.
+func DiffFromFiles(from, to fs.File, opts ...Option) (string, error) {
+	l, err := newInputFromFile(from)
+	if err != nil {
+		return "", fmt.Errorf("left: %w", err)
+	}
+	r, err := newInputFromFile(to)
+	if err != nil {
+		return "", fmt.Errorf("right: %w", err)
+	}
+	return takeDiff(l, r, opts...)
+}
+
 // DiffFromObjects calculates differences with from and to.
 func DiffFromObjects(from, to interface{}, opts ...Option) (string, error) {
 	return takeDiff(&input{x: from, name: "from"}, &input{x: to, name: "to"}, opts...)
@@ -53,6 +67,19 @@ func DiffFromObjects(from, to interface{}, opts ...Option) (string, error) {
 // Deprecated: use DiffObjects()
 func Diff(from, to interface{}, opts ...Option) (string, error) {
 	return DiffFromObjects(from, to, opts...)
+}
+
+func newInputFromFile(f fs.File) (*input, error) {
+	var i input
+	st, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	i.name = st.Name()
+	if err := json.NewDecoder(f).Decode(&i.x); err != nil {
+		return nil, err
+	}
+	return &i, nil
 }
 
 type input struct {
