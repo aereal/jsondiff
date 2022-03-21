@@ -14,25 +14,35 @@ func main() {
 	os.Exit((&app{outstream: os.Stdout, errStream: os.Stderr}).run(os.Args))
 }
 
+const (
+	codeOK int = iota
+	codeHaveDifferences
+	codeError
+
+	codeNoDifferences = 0
+)
+
 type app struct {
 	outstream io.Writer
 	errStream io.Writer
 
-	only   string
-	ignore string
+	only     string
+	ignore   string
+	exitCode bool
 }
 
 func (a *app) run(argv []string) int {
 	fls := flag.NewFlagSet(argv[0], flag.ContinueOnError)
 	fls.StringVar(&a.only, "only", "", "gojq query to point the structure to calculate differences")
 	fls.StringVar(&a.ignore, "ignore", "", "gojq query to ignore the structure to calculate differences")
+	fls.BoolVar(&a.exitCode, "exit-code", false, "exit with 1 if there were differences and 0 means no differences")
 	switch err := fls.Parse(argv[1:]); err {
 	case flag.ErrHelp:
-		return 0
+		return codeOK
 	case nil:
 		// no-op
 	default:
-		return 1
+		return codeError
 	}
 	fromPath := fls.Arg(0)
 	toPath := fls.Arg(1)
@@ -69,11 +79,21 @@ func (a *app) run(argv []string) int {
 		return a.abort("cannot calculate diff: %s", err)
 	}
 	fmt.Fprint(a.outstream, diff)
-	return 0
+	return a.exitDiff(diff)
+}
+
+func (a *app) exitDiff(diff string) int {
+	if !a.exitCode {
+		return codeOK
+	}
+	if diff != "" {
+		return codeHaveDifferences
+	}
+	return codeNoDifferences
 }
 
 func (a *app) abort(format string, x ...interface{}) int {
 	fmt.Fprintf(a.errStream, format, x...)
 	fmt.Fprintln(a.errStream)
-	return 1
+	return codeError
 }
