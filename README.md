@@ -3,19 +3,34 @@
 
 # jsondiff
 
-jsondiff provides functions to calculate differences JSON objects.
-
-The functions takes some options that specify structures to calculate differences.
+jsnodiff provides functions to calculate JSON objects differences with [gojq][] filter.
 
 ## Synopsis
 
-See [pkg.go.dev][pkg-go-dev].
+See examples on [pkg.go.dev][pkg-go-dev].
 
 ## Installation
 
 ```sh
 go get github.com/aereal/jsondiff
 ```
+
+## CLI
+
+```sh
+go install github.com/aereal/jsondiff/cmd/jsondiff@latest
+jsondiff -only '.d' ./testdata/from.json ./testdata/to.json
+# --- from.json
+# +++ to.json
+# @@ -1,2 +1,2 @@
+# -4
+# +3
+```
+
+## See also
+
+- [gojq][]
+  - Thanks to this library, it is able to filter JSON structures
 
 ## License
 
@@ -25,3 +40,4 @@ See LICENSE file.
 [pkg-go-dev-badge]: https://pkg.go.dev/badge/aereal/jsondiff
 [ci-status-badge]: https://github.com/aereal/jsondiff/workflows/CI/badge.svg?branch=main
 [ci-status]: https://github.com/aereal/jsondiff/actions/workflows/CI
+[gojq]: https://github.com/itchyny/gojq
