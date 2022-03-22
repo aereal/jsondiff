@@ -46,48 +46,49 @@ func Only(query *gojq.Query) Option {
 
 // DiffFromFiles calculates differences with flies' contents.
 func DiffFromFiles(from, to fs.File, opts ...Option) (string, error) {
-	l, err := newInputFromFile(from)
+	l, err := NewInputFromFile(from)
 	if err != nil {
 		return "", fmt.Errorf("left: %w", err)
 	}
-	r, err := newInputFromFile(to)
+	r, err := NewInputFromFile(to)
 	if err != nil {
 		return "", fmt.Errorf("right: %w", err)
 	}
-	return takeDiff(l, r, opts...)
+	return Diff(l, r, opts...)
 }
 
 // DiffFromObjects calculates differences with from and to.
 func DiffFromObjects(from, to interface{}, opts ...Option) (string, error) {
-	return takeDiff(&input{x: from, name: "from"}, &input{x: to, name: "to"}, opts...)
+	return Diff(&Input{X: from, Name: "from"}, &Input{X: to, Name: "to"}, opts...)
 }
 
-// Diff calculates differences with from and to.
-//
-// Deprecated: use DiffObjects()
-func Diff(from, to interface{}, opts ...Option) (string, error) {
-	return DiffFromObjects(from, to, opts...)
-}
-
-func newInputFromFile(f fs.File) (*input, error) {
-	var i input
+// NewInputFromFile returns a new Input from file's name and contents.
+func NewInputFromFile(f fs.File) (*Input, error) {
+	var i Input
 	st, err := f.Stat()
 	if err != nil {
 		return nil, err
 	}
-	i.name = st.Name()
-	if err := json.NewDecoder(f).Decode(&i.x); err != nil {
+	i.Name = st.Name()
+	if err := json.NewDecoder(f).Decode(&i.X); err != nil {
 		return nil, err
 	}
 	return &i, nil
 }
 
-type input struct {
-	name string
-	x    interface{}
+// Input represents a pair of the object that decoded from JSON and its name.
+type Input struct {
+	// Name is Input's name.
+	//
+	// It'll be used as patch's file name.
+	Name string
+
+	// X is an object decoded from JSON.
+	X interface{}
 }
 
-func takeDiff(from, to *input, opts ...Option) (string, error) {
+// Diff calculates differences with inputs.
+func Diff(from, to *Input, opts ...Option) (string, error) {
 	o := &opt{}
 	for _, f := range opts {
 		f(o)
@@ -96,8 +97,8 @@ func takeDiff(from, to *input, opts ...Option) (string, error) {
 		return "", err
 	}
 	var (
-		fromObj = from.x
-		toObj   = to.x
+		fromObj = from.X
+		toObj   = to.X
 	)
 	switch {
 	case o.ignore != nil:
@@ -131,7 +132,7 @@ func takeDiff(from, to *input, opts ...Option) (string, error) {
 		return "", fmt.Errorf("toJSON(rhs): %v", err)
 	}
 	edits := myers.ComputeEdits(span.URIFromPath(""), l, r)
-	d := gotextdiff.ToUnified(from.name, to.name, l, edits)
+	d := gotextdiff.ToUnified(from.Name, to.Name, l, edits)
 	return fmt.Sprint(d), nil
 }
 
