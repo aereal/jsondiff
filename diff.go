@@ -54,19 +54,12 @@ func DiffFromFiles(from, to fs.File, opts ...Option) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("right: %w", err)
 	}
-	return takeDiff(l, r, opts...)
+	return Diff(l, r, opts...)
 }
 
 // DiffFromObjects calculates differences with from and to.
 func DiffFromObjects(from, to interface{}, opts ...Option) (string, error) {
-	return takeDiff(&Input{X: from, Name: "from"}, &Input{X: to, Name: "to"}, opts...)
-}
-
-// Diff calculates differences with from and to.
-//
-// Deprecated: use DiffObjects()
-func Diff(from, to interface{}, opts ...Option) (string, error) {
-	return DiffFromObjects(from, to, opts...)
+	return Diff(&Input{X: from, Name: "from"}, &Input{X: to, Name: "to"}, opts...)
 }
 
 // NewInputFromFile returns a new Input from file's name and contents.
@@ -94,7 +87,8 @@ type Input struct {
 	X interface{}
 }
 
-func takeDiff(from, to *Input, opts ...Option) (string, error) {
+// Diff calculates differences with inputs.
+func Diff(from, to *Input, opts ...Option) (string, error) {
 	o := &opt{}
 	for _, f := range opts {
 		f(o)
