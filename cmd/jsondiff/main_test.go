@@ -19,7 +19,7 @@ func Test(t *testing.T) {
 		{"ok; no queries", []string{"jsondiff", "../../testdata/from.json", "../../testdata/to.json"}, codeOK, "--- from.json\n+++ to.json\n@@ -1,7 +1,7 @@\n {\n   \"a\": 1,\n-  \"b\": 2,\n-  \"c\": 3,\n-  \"d\": 4\n+  \"b\": 1,\n+  \"c\": 2,\n+  \"d\": 3\n }\n \n", ""},
 		{"ok; with -exit-code", []string{"jsondiff", "-exit-code", "../../testdata/from.json", "../../testdata/to.json"}, codeHaveDifferences, "--- from.json\n+++ to.json\n@@ -1,7 +1,7 @@\n {\n   \"a\": 1,\n-  \"b\": 2,\n-  \"c\": 3,\n-  \"d\": 4\n+  \"b\": 1,\n+  \"c\": 2,\n+  \"d\": 3\n }\n \n", ""},
 		{"ok; with -only option", []string{"jsondiff", "-only", ".d", "../../testdata/from.json", "../../testdata/to.json"}, codeOK, "--- from.json\n+++ to.json\n@@ -1,2 +1,2 @@\n-4\n+3\n \n", ""},
-		{"ok; with -ignore option", []string{"jsondiff", "-ignore", ".d", "../../testdata/from.json", "../../testdata/to.json"}, codeOK, "--- from.json\n+++ to.json\n@@ -1,7 +1,7 @@\n {\n   \"a\": 1,\n-  \"b\": 2,\n-  \"c\": 3,\n+  \"b\": 1,\n+  \"c\": 2,\n   \"d\": null\n }\n \n", ""},
+		{"ok; with -ignore option", []string{"jsondiff", "-ignore", ".d", "../../testdata/from.json", "../../testdata/to.json"}, codeOK, "--- from.json\n+++ to.json\n@@ -1,6 +1,6 @@\n {\n   \"a\": 1,\n-  \"b\": 2,\n-  \"c\": 3\n+  \"b\": 1,\n+  \"c\": 2\n }\n \n", ""},
 		{"no paths given", []string{"jsondiff"}, codeError, "", "2 file paths must be passed\n"},
 	}
 	for _, tc := range testCases {

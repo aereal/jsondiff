@@ -103,7 +103,7 @@ func Diff(from, to *Input, opts ...Option) (string, error) {
 	switch {
 	case o.ignore != nil:
 		var err error
-		q := withUpdate(o.ignore)
+		q := removing(o.ignore)
 		fromObj, err = modifyValue(q, fromObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
@@ -163,50 +163,14 @@ func toJSON(x interface{}) (string, error) {
 	return b.String(), nil
 }
 
-func withUpdate(query *gojq.Query) *gojq.Query {
-	var ret *gojq.Query
-	qs := splitIntoTerms(query)
-	for j := len(qs) - 1; j >= 0; j-- {
-		left := &gojq.Query{
-			Op:    gojq.OpAssign,
-			Left:  qs[j],
-			Right: nullRhs,
-		}
-		if ret == nil { // most right leaf
-			ret = left
-			continue
-		}
-
-		ret = &gojq.Query{
-			Op:    gojq.OpPipe,
-			Left:  left,
-			Right: ret,
-		}
+func removing(query *gojq.Query) *gojq.Query {
+	return &gojq.Query{
+		Term: &gojq.Term{
+			Type: gojq.TermTypeFunc,
+			Func: &gojq.Func{
+				Name: "del",
+				Args: []*gojq.Query{query},
+			},
+		},
 	}
-	return ret
-}
-
-var nullRhs *gojq.Query
-
-func init() {
-	var err error
-	nullRhs, err = gojq.Parse("null")
-	if err != nil {
-		panic(err)
-	}
-}
-
-func splitIntoTerms(q *gojq.Query) []*gojq.Query {
-	ret := []*gojq.Query{}
-	if q.Term != nil {
-		ret = append(ret, q)
-		return ret
-	}
-	if q.Left != nil {
-		ret = append(ret, splitIntoTerms(q.Left)...)
-	}
-	if q.Right != nil {
-		ret = append(ret, splitIntoTerms(q.Right)...)
-	}
-	return ret
 }
