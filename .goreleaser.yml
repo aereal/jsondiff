@@ -1,0 +1,16 @@
+---
+
+builds:
+  -
+    main: ./cmd/jsondiff
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+release:
+  mode: keep-existing
