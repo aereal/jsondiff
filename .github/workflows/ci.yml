@@ -37,7 +37,7 @@ jobs:
       - name: test
         run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
       - name: upload coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == '1.18.x' }}
         with:
           files: ./cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt
