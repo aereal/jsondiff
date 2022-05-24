@@ -69,10 +69,9 @@ func ExampleDiffFromObjects_ignore() {
 	// Output:
 	// --- from
 	// +++ to
-	// @@ -2,6 +2,6 @@
+	// @@ -1,5 +1,5 @@
+	//  {
 	//    "a": 1,
-	//    "b": null,
-	//    "c": null,
 	// -  "d": 4
 	// +  "d": 3
 	//  }

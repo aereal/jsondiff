@@ -50,21 +50,21 @@ func TestDiff(t *testing.T) {
 	}
 }
 
-func Test_withUpdate(t *testing.T) {
+func Test_removing(t *testing.T) {
 	queries := []struct {
 		query string
 		want  string
 	}{
-		{".age", ".age = null"},
-		{".age, .name", ".age = null | .name = null"},
-		{".age, .name, .meta", ".age = null | .name = null | .meta = null"},
-		{".meta[]", ".meta[] = null"},
-		{".meta[0:-1]", ".meta[0:-1] = null"},
+		{".age", "del(.age)"},
+		{".age, .name", "del(.age, .name)"},
+		{".age, .name, .meta", "del(.age, .name, .meta)"},
+		{".meta[]", "del(.meta[])"},
+		{".meta[0:-1]", "del(.meta[0:-1])"},
 	}
 	for _, c := range queries {
 		t.Run(c.query, func(t *testing.T) {
 			want := parseQuery(t, c.want)
-			got := withUpdate(parseQuery(t, c.query))
+			got := removing(parseQuery(t, c.query))
 			if diff := cmp.Diff(want, got); diff != "" {
 				t.Errorf("-want, +got:\n%s", diff)
 			}
