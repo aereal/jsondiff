@@ -103,22 +103,22 @@ func Diff(from, to *Input, opts ...Option) (string, error) {
 	switch {
 	case o.ignore != nil:
 		var err error
-		q := withUpdate(o.ignore)
-		fromObj, err = modifyValue(q, fromObj)
+		q := WithUpdate(o.ignore)
+		fromObj, err = ModifyValue(q, fromObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
 		}
-		toObj, err = modifyValue(q, toObj)
+		toObj, err = ModifyValue(q, toObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(rhs): %v", err)
 		}
 	case o.only != nil:
 		var err error
-		fromObj, err = modifyValue(o.only, fromObj)
+		fromObj, err = ModifyValue(o.only, fromObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
 		}
-		toObj, err = modifyValue(o.only, toObj)
+		toObj, err = ModifyValue(o.only, toObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
 		}
@@ -136,7 +136,7 @@ func Diff(from, to *Input, opts ...Option) (string, error) {
 	return fmt.Sprint(d), nil
 }
 
-func modifyValue(query *gojq.Query, x interface{}) (interface{}, error) {
+func ModifyValue(query *gojq.Query, x interface{}) (interface{}, error) {
 	iter := query.Run(x)
 	var ret interface{}
 	for {
@@ -163,7 +163,7 @@ func toJSON(x interface{}) (string, error) {
 	return b.String(), nil
 }
 
-func withUpdate(query *gojq.Query) *gojq.Query {
+func WithUpdate(query *gojq.Query) *gojq.Query {
 	var ret *gojq.Query
 	qs := splitIntoTerms(query)
 	for j := len(qs) - 1; j >= 0; j-- {

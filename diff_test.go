@@ -64,7 +64,7 @@ func Test_withUpdate(t *testing.T) {
 	for _, c := range queries {
 		t.Run(c.query, func(t *testing.T) {
 			want := parseQuery(t, c.want)
-			got := withUpdate(parseQuery(t, c.query))
+			got := WithUpdate(parseQuery(t, c.query))
 			if diff := cmp.Diff(want, got); diff != "" {
 				t.Errorf("-want, +got:\n%s", diff)
 			}
