@@ -10,7 +10,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: lint
         uses: reviewdog/action-golangci-lint@v2
   test:
@@ -24,7 +24,7 @@ jobs:
           - ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go_version }}
@@ -47,7 +47,7 @@ jobs:
     outputs:
       will_release: ${{ steps.determine_release.outputs.new_release_published }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: determine_release
         uses: cycjimmy/semantic-release-action@v3.0.0
         with:
@@ -63,7 +63,7 @@ jobs:
       - determine_release
     if: ${{ needs.determine_release.outputs.will_release }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: cycjimmy/semantic-release-action@v3.0.0
