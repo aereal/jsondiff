@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/google/go-cmp v0.5.9
 	github.com/hexops/gotextdiff v1.0.3
-	github.com/itchyny/gojq v0.12.8
+	github.com/itchyny/gojq v0.12.14
 )
 
-require github.com/itchyny/timefmt-go v0.1.3 // indirect
+require github.com/itchyny/timefmt-go v0.1.5 // indirect
