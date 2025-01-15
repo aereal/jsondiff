@@ -7,49 +7,50 @@ on:
     branches:
       - main
 jobs:
+  ok:
+    runs-on: ubuntu-latest
+    if: failure()
+    needs:
+      - lint
+      - test
+    steps:
+      - run: exit 1
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: lint
         uses: reviewdog/action-golangci-lint@v2
   test:
     strategy:
       matrix:
         go_version:
-          - 1.16.x
-          - 1.17.x
-          - 1.18.x
-        os:
-          - ubuntu-latest
-    runs-on: ${{ matrix.os }}
+          - stable
+          - oldstable
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go_version }}
-      - uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.go_version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go_version }}
+          cache: true
       - name: test
-        run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
-      - name: upload coverage
-        uses: codecov/codecov-action@v3
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == '1.18.x' }}
-        with:
-          files: ./cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt
+        run: go test -v -race -coverprofile=cover.out -covermode=atomic ./...
+      - uses: k1LoW/octocov-action@v1
+        if: ${{ matrix.go_version == 'stable' }}
   determine_release:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     outputs:
       will_release: ${{ steps.determine_release.outputs.new_release_published }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: determine_release
-        uses: cycjimmy/semantic-release-action@v3.0.0
+        uses: cycjimmy/semantic-release-action@v4
         with:
           dry_run: true
         continue-on-error: true
@@ -63,22 +64,17 @@ jobs:
       - determine_release
     if: ${{ needs.determine_release.outputs.will_release }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: cycjimmy/semantic-release-action@v3.0.0
+      - uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.18.x'
-      - uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.go_version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go_version }}
-      - uses: goreleaser/goreleaser-action@v2.9.1
+          go-version: stable
+          cache: true
+      - uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release --rm-dist
