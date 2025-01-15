@@ -72,6 +72,28 @@ func Test_withUpdate(t *testing.T) {
 	}
 }
 
+func Test_deleting(t *testing.T) {
+	queries := []struct {
+		query string
+		want  string
+	}{
+		{".age", "del(.age)"},
+		{".age, .name", "del(.age, .name)"},
+		{".age, .name, .meta", "del(.age, .name, .meta)"},
+		{".meta[]", "del(.meta[])"},
+		{".meta[0:-1]", "del(.meta[0:-1])"},
+	}
+	for _, c := range queries {
+		t.Run(c.query, func(t *testing.T) {
+			want := parseQuery(t, c.want)
+			got := deleting(parseQuery(t, c.query))
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("-want, +got:\n%s", diff)
+			}
+		})
+	}
+}
+
 func parseQuery(t *testing.T, q string) *gojq.Query {
 	t.Helper()
 	parsed, err := gojq.Parse(q)
