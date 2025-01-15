@@ -74,7 +74,7 @@ jobs:
         with:
           go-version: stable
           cache: true
-      - uses: goreleaser/goreleaser-action@v2.9.1
+      - uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
           args: release --rm-dist
