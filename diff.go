@@ -103,7 +103,7 @@ func Diff(from, to *Input, opts ...Option) (string, error) {
 	switch {
 	case o.ignore != nil:
 		var err error
-		q := WithUpdate(o.ignore)
+		q := deleting(o.ignore)
 		fromObj, err = ModifyValue(q, fromObj)
 		if err != nil {
 			return "", fmt.Errorf("modify(lhs): %v", err)
@@ -163,6 +163,9 @@ func toJSON(x interface{}) (string, error) {
 	return b.String(), nil
 }
 
+// WithUpdate is a internal helper function.
+//
+// Deprecated: WithUpdate will be deleted in the future.
 func WithUpdate(query *gojq.Query) *gojq.Query {
 	var ret *gojq.Query
 	qs := splitIntoTerms(query)
@@ -184,6 +187,18 @@ func WithUpdate(query *gojq.Query) *gojq.Query {
 		}
 	}
 	return ret
+}
+
+func deleting(query *gojq.Query) *gojq.Query {
+	return &gojq.Query{
+		Term: &gojq.Term{
+			Type: gojq.TermTypeFunc,
+			Func: &gojq.Func{
+				Name: "del",
+				Args: []*gojq.Query{query},
+			},
+		},
+	}
 }
 
 var nullRhs *gojq.Query
