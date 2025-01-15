@@ -163,6 +163,9 @@ func toJSON(x interface{}) (string, error) {
 	return b.String(), nil
 }
 
+// WithUpdate is a internal helper function.
+//
+// Deprecated: WithUpdate will be deleted in the future.
 func WithUpdate(query *gojq.Query) *gojq.Query {
 	var ret *gojq.Query
 	qs := splitIntoTerms(query)
