@@ -17,12 +17,9 @@ jobs:
     strategy:
       matrix:
         go_version:
-          - 1.16.x
-          - 1.17.x
-          - 1.18.x
-        os:
-          - ubuntu-latest
-    runs-on: ${{ matrix.os }}
+          - stable
+          - oldstable
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -33,7 +30,7 @@ jobs:
         run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
       - name: upload coverage
         uses: codecov/codecov-action@v3
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == '1.18.x' }}
+        if: ${{ matrix.go_version == 'stable' }}
         with:
           files: ./cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt
   determine_release:
