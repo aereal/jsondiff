@@ -7,6 +7,14 @@ on:
     branches:
       - main
 jobs:
+  ok:
+    runs-on: ubuntu-latest
+    if: failure()
+    needs:
+      - lint
+      - test
+    steps:
+      - run: exit 1
   lint:
     runs-on: ubuntu-latest
     steps:
