@@ -25,15 +25,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go_version }}
-      - uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.go_version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go_version }}
+          cache: true
       - name: test
         run: go test -v -race -coverprofile=cover.os-${{ matrix.os }}.ver-${{ matrix.go_version }}.txt -covermode=atomic ./...
       - name: upload coverage
@@ -69,15 +64,10 @@ jobs:
       - uses: cycjimmy/semantic-release-action@v3.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v5
         with:
-          go-version: '1.18.x'
-      - uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ matrix.go_version }}-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-${{ matrix.go_version }}
+          go-version: stable
+          cache: true
       - uses: goreleaser/goreleaser-action@v2.9.1
         with:
           version: latest
