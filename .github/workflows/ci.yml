@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - id: determine_release
-        uses: cycjimmy/semantic-release-action@v3.0.0
+        uses: cycjimmy/semantic-release-action@v4
         with:
           dry_run: true
         continue-on-error: true
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: cycjimmy/semantic-release-action@v3.0.0
+      - uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - uses: actions/setup-go@v5
