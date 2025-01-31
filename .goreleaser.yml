@@ -1,8 +1,5 @@
 ---
-
 builds:
-  -
-    main: ./cmd/jsondiff
     env:
       - CGO_ENABLED=0
     goos:
