@@ -33,7 +33,7 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go_version }}
           cache: true
@@ -69,7 +69,7 @@ jobs:
       - uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ github.token }}
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: stable
           cache: true
